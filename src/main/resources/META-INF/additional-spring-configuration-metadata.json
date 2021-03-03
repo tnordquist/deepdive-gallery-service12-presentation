@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "spring.security.oauth2.resourceserver.jwt.client-id",
+      "type": "java.lang.String",
+      "description": "Description for spring.security.oauth2.resourceserver.jwt.client-id."
+    },
+    {
+      "name": "datasource.url",
+      "type": "java.lang.String",
+      "description": "Description for datasource.url."
+    }
+  ] }
