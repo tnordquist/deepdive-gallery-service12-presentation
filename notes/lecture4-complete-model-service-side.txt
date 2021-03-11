@@ -1,8 +1,0 @@
-Add Image Gallery
-
-- Add Image: explain its purpose.	
-	* See lectures 31, 32.
-
-- Add Gallery: explain its purpose
-
-- Begin ImageController
