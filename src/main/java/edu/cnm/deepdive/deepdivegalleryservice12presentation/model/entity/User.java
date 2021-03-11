@@ -3,12 +3,18 @@ package edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -23,9 +29,9 @@ import org.springframework.lang.NonNull;
     name = "user_profile",
     indexes = {
       @Index(columnList = "created"),
-      @Index(columnList = "updated")
+      @Index(columnList = "connected")
 })
-public class User { // TODO watch Nick's Codebreaker for explanations of annotations
+public class User {
 
   @NonNull
   @Id
@@ -44,11 +50,6 @@ public class User { // TODO watch Nick's Codebreaker for explanations of annotat
   @UpdateTimestamp
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = false)
-  private Date updated;
-
-  @NonNull
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(nullable = false)
   private Date connected;
 
   @NonNull
@@ -62,6 +63,18 @@ public class User { // TODO watch Nick's Codebreaker for explanations of annotat
   private String displayName;
 
   @NonNull
+  @JsonIgnore
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "contributor")
+  @OrderBy("created DESC")
+  private final List<Image> images = new LinkedList<>();
+
+  @NonNull
+  @JsonIgnore
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "creator", cascade = CascadeType.ALL)
+  @OrderBy("created DESC")
+  private final List<Gallery> galleries = new LinkedList<>();
+
+  @NonNull
   public UUID getId() {
     return id;
   }
@@ -69,11 +82,6 @@ public class User { // TODO watch Nick's Codebreaker for explanations of annotat
   @NonNull
   public Date getCreated() {
     return created;
-  }
-
-  @NonNull
-  public Date getUpdated() {
-    return updated;
   }
 
   @NonNull
@@ -101,5 +109,15 @@ public class User { // TODO watch Nick's Codebreaker for explanations of annotat
 
   public void setDisplayName(@NonNull String displayName) {
     this.displayName = displayName;
+  }
+
+  @NonNull
+  public List<Image> getImages() {
+    return images;
+  }
+
+  @NonNull
+  public List<Gallery> getGalleries() {
+    return galleries;
   }
 }

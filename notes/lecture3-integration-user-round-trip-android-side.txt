@@ -1,0 +1,65 @@
+Log Display of User Info.
+
+- User
+	* Add this POJO based on information returned from the back end.
+	
+- GalleryServiceProxy
+	* Gson gson = new Builder: this says we are building a Gson object.
+		- 
+	* Logging: different levels: body is everything, in our case in BuildConfig we can use  DEBUG. It's a boolean. If yes, send the body.
+	* Retrofit: this uses builder pattern also. It's an object that knows how to take output from http and route it to Gson, to reactivex, etc. It also knows how to create an instance of the service.
+		- converter factor is a connection between retrofit and gson, or whatever library were using for serialization and deserilization. Create is a static factory method.
+		- CallAdaptorFacotry specifies connection to deal with ReactiveX task.
+		- sits on top of low level http client
+		- retrofit object needs the base url. So Retrofit now knows any request will have this as the first part.
+	* Now create an instance of our implementation. It takes in the class object (contains metadata about the class).
+	* Now declare the method to get the User from the external service, retofit implements it.
+		-  Relative to our path, where to send this request? "users/me"
+		- The host name is not case sensitive but anything after it should be assumed to be case sensitive.
+		- Tell retrofit that we will pass it a bearer token. Retrofit takes token and constructs a http request with a header cantaining that token.
+		
+- UserRepository
+	* Start with a Context: used when display on screen, connecting to a service on the device,read and writing files to a local file system.
+	* Need a reference to the WebServiceProxy:
+	* GoogleSignInService:  this and the above won't change so make final.
+	* Need a constructor:
+		- Get references to the WebServiceProxy and GoogleSignInService.
+	* Consumer of the repository doesn't know or care whether it's talking to a local file, local database, external service, etc.
+	* So, create the method to get the User information.
+		- This method will do a lot.
+			* Look at current logged in user of GoogleSignIn.
+			* Look at the external service to see if this User is already in the server? If so, get that info. from the database of the external service.
+			* This method will return a Task not the User itself.
+		- So the UserRepository handles all those details. (Note, that the viewmodel makes use of this work done by the repository which wrapped up those details into a method, and uses that to give model data to view objects either indirectly through the 
+		controller class or directly through databinding.
+			* The method details
+				- We need to use GoogleSignInService in order to get the account.
+				- The WebServiceProxy method returns a Single<User> (a Single returns successfully and hands the result to a Consumer),  so we need to flatmap in order to pass the account Single onto the Single User returned from the external service. We need to pass into that method, which is getProfile, a Bearer token.
+					* account.getToken passed is only half the battle, "Bearer " needs to be added to that token. Create getBearerToken in order to return a formatted "Bearer " concatenated to the idToken.
+					* Flatmap: we've transformed a Single that transforms an account to a Single that has as result a User.
+				- subscribeOn: 
+					* this sets up a an IO thread, which makes it suitable for dealing with the outside world. The Single, which is an Observable, operates on the IO Scheduler. The Observable can be Observed, of course, for the User item that it emits.
+		- So in sum, this ReactiveX based method, requires you to think in terms of a series of chained operations going from one async task to another. No one right way. If one task is to be turned into another Task, then we do a flatmap. Tasks do things like performing a server request, getting data from a database, waiting for some background process to finish or downloading an image, all which should be executed asynchronously.
+					* So, the whole reactivex line of code is a Task, not a User, when this method is invoked the Task executes.
+
+- GoogleSignInService: turn refresh() method of type Task<GoogleSignInAccount> to type Single<GoogleSignInAccount>.
+	* The Emitter stuff: We are creating a new Single task and giving it an emitter. Functional interface takes an emitter object. The onSuccess or onError is invoked. 
+
+- LoginActivity: onCreate method was receiving a GoogleSignIn Task now it's receiving an Single
+	* 
+- AndroidManifest:
+	* Internet permission needed
+	* usesCleartextTraffic="true" needed to communicate over http as well as https.
+					
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

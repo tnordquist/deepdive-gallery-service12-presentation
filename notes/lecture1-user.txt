@@ -1,0 +1,118 @@
+- Explain why a service is needed:
+	* We'll have users who can created galleries and upload images to them.
+	* So we'll need a User entity, Gallery entity, Image entity: show the ERD.
+
+- User
+	* oauth_key used to connect to the account, we still use a separate display name.
+	* connected: last time the user connected. Every time there's a request, 
+	you'll be sending a token, that says "this is my authentication token". With every request made 
+	the token is sent. So connected is the timestamp of the last time you made a request to the 
+	server as an auth user.
+	
+- Gallery & Image
+	* The user_id is a FK. In JPA / Hibernate the FK is automatically indexed. That does not happen in ROOM. Even in ROOM ERD we don't explicitly indicate the IX because it's assumed.
+	
+- ERD notes: For future reference: 
+	* In the ERD the enum is indicated like this example: marker: Enum (redFlag, yellowFlag, etc.)
+	* If a FK is nullable then the other side of that relationship is optional one.
+
+- Create new Spring Initializr project:
+	* New project: Spring Initializr
+	* Use 11, it needs to be at least 8.
+	* Settings:
+		- Group: edu.cnm.deepdive
+		- Artifact: gallery
+		- Leave as is, Type, Language, and Packaging
+		- Version: leave the same
+		- Name is gallery
+		- Descriptin: Service for users to upload images into galleries. 
+		- Package: edu.cnm.deepdive.gallery
+	* Dependencies
+		- Web: the MVC portion of the project for responding to requests from the outside world;
+			sending data to the outside world, presenting some aspect of our data to the outside world for views.
+			* Spring Web
+			* Spring HATEOS:
+		- Security: 
+			* Spring Security
+		- SQL
+			* Spring Data JPA: brings in Spring data, jpa / hibernate with jdbc underneath
+			* Apache Derby Data: if the word data is on the end then it's embedded, others, one 
+			such as MySQL Driver is configured to run on a database external to your app. 
+		- Testing
+			* Spring REST Docs: used to write tests and test your coverage. Docs are then created automatically.
+	* Name of project: name is gallery-service
+	
+- The pom.xml
+	* Make sure there's no red: if there is, go to Maven tool window and refresh in attempt.
+	* Or, in the Lifecyle, click on the compile sprocket
+	* Notice that everything we specified is in here. We can add and subtact from pom.xml as we like.
+- Run the application to show that the project starts:
+	* Notice that Tomcat started on 8080. We will change that port.
+	* It will show a default log in page because that's what Spring security does.
+	* Stop the service.
+
+- Create the User entity class inside model.entity
+	* There has to be @Entity
+	* There must be a PK
+		- id: type is UUID from java.util. @Id is required. Import from javax.persistence. Not a Spring annotation.
+		- Hibernate tranlates between lower camel case and lower snake case.
+		- Autogenerate the UUID value. @GeneratedValue is javax.persistence. Generator = "uuid2". 16 bytes of data.
+		- Hibernate annotation: @GenericGenerator: 
+		- @Nonull: org.springframework. Has to do with the fields in Spring.
+		- In the column put nullable = false.
+		- We're using Derby: to store something with 16 bytes of data, it's not a string, so a columnDefinition is needed for injecting some information into the table. A char is one bit long. This is binary data, not text. These are sql key words so all upper case.
+		- Look up UUID in wikipedia.
+			* UUID vs long as PK: 
+				- A distributed database could have identical ids when longs used because longs are generated sequentially. To stop long collisions the separated databases must be coordinated: 0 up to 1 billion on the first, 1 billion upt to 2 billion on the second, etc. UUIDs are not sequential so no collision problem. 2^128 different UUID possibilities which is same as 10^40 possibilities.
+				- Opacity: Longs ids can be guessed because sequential while knowing one UUID tells you nothing about the next one. Think of bank accounts and on-line merchants.
+	* creation
+		- @CreationTimestamp: Hibernate, not JPA.
+		- @Temporal: this is javax.persistence.
+		- Can't create an index here. Index is not considered basic concept of sql. If a say unique = true in the @Column then it will be indexed by JPA in order to enforce the unique=true, that way. 
+		- But, don't make this unique because you don't want to assume that two records can't be made at the same time.
+	* oauthKey
+		- 
+	* connected
+		- updateable = true. (This is the default).
+		- TIMESTAMP (contains both date and time) says the sql column will be a timestamp rather than just a Date column.
+	
+	* @Table: Create indices that are not unique,that are not PKs, and not FK backed indices. In JPA put lowlevel details of how an entity maps to a table if the default does not fit.
+		- define a different table name.
+		- Any composite keys should be defined here, if not defined in the columns themselves.
+		- Define the table name
+	
+- Test run the app.
+
+- DDL
+	* Remember that be default a Spring data application is using an in memory database and won't make ddl very well.
+	* When creating a different database driver the datasource line has jdbc, which tells what kind of url this is. Derby is the driver, then the database name, i.e., gallery_db. created=true says make it if it's not there. collation type here says that there will be case insensitive sorting.
+	* ddl-auto: update. Means that if database exists but structure doesn't quite match the entity it will try to match it.
+	* properties... stuff generates the actual ddl.
+	* context-path: sets up the context path. Makes is easier to set up our reverse proxy. We won't allow direct access to our Tomcat application. Instead, we'll configure the regular Apache web server in our hosting accounts so they forward things to our application within the same machine. Having a context path will help do that.
+	* port: for setting a port different from the 8080 default. We'll make sure the client knows where to find this.
+	* Run the code then immediately stop the application, if it succeeded and then comment out the schema generation code.
+	* Be sure to add the database to the .gitignore
+	* Format the ddl.sql file.
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+			
+			
+			
+			
