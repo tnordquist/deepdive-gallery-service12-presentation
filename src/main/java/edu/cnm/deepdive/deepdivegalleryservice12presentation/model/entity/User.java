@@ -70,6 +70,12 @@ public class User {
 
   @NonNull
   @JsonIgnore
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "contributor")
+  @OrderBy("created DESC")
+  private final List<Image> images = new LinkedList<>();
+
+  @NonNull
+  @JsonIgnore
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "creator", cascade = CascadeType.ALL)
   @OrderBy("created DESC")
   private final List<Gallery> galleries = new LinkedList<>();
