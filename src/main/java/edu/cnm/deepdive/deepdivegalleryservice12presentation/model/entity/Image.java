@@ -1,12 +1,13 @@
 package edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.GalleryViews;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.ImageViews;
 import java.net.URI;
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,6 +22,8 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -32,17 +35,13 @@ import org.springframework.stereotype.Component;
         @Index(columnList = "title")
     }
 )
-@JsonInclude(Include.NON_NULL)
-@JsonIgnoreProperties(
-    value = {"id", "created", "contributor"},
-    allowGetters = true, ignoreUnknown = true
-)
-@JsonPropertyOrder({"id", "title", "description", "href", "created", "contributor", "name",
-    "description"})
 @Component
-public class Image /*implements Comparable<Image>, FlatImage*/ {
-  //TODO when should Comparable be added and Comparator be added?
+@JsonView({GalleryViews.Hierarchical.class, ImageViews.Flat.class})
+public class Image {
 
+  private static EntityLinks entityLinks;
+
+  @NonNull
   @Id
   @GeneratedValue(generator = "uuid2")
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -64,29 +63,31 @@ public class Image /*implements Comparable<Image>, FlatImage*/ {
   @Column(length = 100)
   private String title;
 
-// TODO should Path be created for this project?
+  @Column(length = 1024)
+  private String description;
 
   @NonNull
   @Column(nullable = false, updatable = false)
   private String name;
 
   @NonNull
+  @JsonIgnore
+  @Column(name = "resource_key", nullable = false, updatable = false)
+  private String key;
+
+  @NonNull
   @Column(nullable = false, updatable = false)
   private String contentType;
-
-  @Column(length = 1024)
-  private String description;
 
   @NonNull
   @ManyToOne(fetch = FetchType.EAGER, optional = false)
   @JoinColumn(name = "contributor_id", nullable = false, updatable = false)
-//  @JsonSerialize(as = FlatUser.class)
+  @JsonView(ImageViews.Hierarchical.class)
   private User contributor;
 
-
-  @ManyToOne(fetch = FetchType.EAGER, optional = false)
-  @JoinColumn(name = "gallery_id", nullable = false, updatable = false)
-//  @JsonSerialize(as = FlatGallery.class)
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "gallery_id")
+  @JsonView(ImageViews.Hierarchical.class)
   private Gallery gallery;
 
   @NonNull
@@ -104,21 +105,13 @@ public class Image /*implements Comparable<Image>, FlatImage*/ {
     return updated;
   }
 
-  // TODO Consider rather Path is needed, or only name
-
-  /**
-   * Returns the original filename of this image.
-   */
   @NonNull
-  public String getName() {
-    return name;
+  public User getContributor() {
+    return contributor;
   }
 
-  /**
-   * Sets the original filename of this image to the specified {@code name}.
-   */
-  public void setName(@NonNull String name) {
-    this.name = name;
+  public void setContributor(@NonNull User contributor) {
+    this.contributor = contributor;
   }
 
   public String getTitle() {
@@ -129,17 +122,6 @@ public class Image /*implements Comparable<Image>, FlatImage*/ {
     this.title = title;
   }
 
-  /**
-   * Returns the MIME type of this image.
-   */
-  public String getContentType() {
-    return contentType;
-  }
-
-  public void setContentType(String contentType) {
-    this.contentType = contentType;
-  }
-
   public String getDescription() {
     return description;
   }
@@ -148,19 +130,33 @@ public class Image /*implements Comparable<Image>, FlatImage*/ {
     this.description = description;
   }
 
-  /**
-   * Returns the {@link User} that contributed this image.
-   */
   @NonNull
-  public User getContributor() {
-    return contributor;
+  public String getName() {
+    return name;
+  }
+
+  public void setName(@NonNull String name) {
+    this.name = name;
+  }
+
+  @NonNull
+  public String getKey() {
+    return key;
+  }
+
+  public void setKey(@NonNull String key) {
+    this.key = key;
   }
 
   /**
-   * Sets this image's contributor to the specified {@link User}.
+   * Returns the MIME type of this image.
    */
-  public void setContributor(@NonNull User contributor) {
-    this.contributor = contributor;
+  public String getContentType() {
+    return contentType;
+  }
+
+  public void setContentType(@NonNull String contentType) {
+    this.contentType = contentType;
   }
 
   public Gallery getGallery() {
@@ -171,7 +167,20 @@ public class Image /*implements Comparable<Image>, FlatImage*/ {
     this.gallery = gallery;
   }
 
-  // TODO When to implement Hateaos?
-  // TODO What are hash, equal, compare used for here?
+  public URI getHref() {
+    //noinspection ConstantConditions
+    return (id != null) ? entityLinks.linkForItemResource(Image.class, id).toUri() : null;
+  }
 
+  @PostConstruct
+  private void initHateoas() {
+    //noinspection ResultOfMethodCallIgnored
+    entityLinks.toString();
+  }
+
+  @Autowired
+  public void setEntityLinks(
+      @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EntityLinks entityLinks) {
+    Image.entityLinks = entityLinks;
+  }
 }

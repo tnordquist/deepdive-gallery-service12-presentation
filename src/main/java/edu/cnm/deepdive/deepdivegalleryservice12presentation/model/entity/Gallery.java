@@ -1,10 +1,14 @@
 package edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.GalleryViews;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.ImageViews;
+import java.net.URI;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,23 +26,24 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(
     indexes = {
-        @Index(columnList = "created, updated"),
+        @Index(columnList = "created"),
         @Index(columnList = "title")
     }
 )
-@JsonIgnoreProperties(
-    value = {"id", "created", "updated", "creator"},
-    allowGetters = true, ignoreUnknown = true
-)
-public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapping?
+@Component
+@JsonView({GalleryViews.Flat.class, ImageViews.Hierarchical.class})
+public class Gallery {
 
-//  private static EntityLinks entityLinks;
+  private static EntityLinks entityLinks;
 
   @NonNull
   @Id
@@ -59,7 +64,8 @@ public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapp
   @Column(nullable = false)
   private Date updated;
 
-  @Column(length = 100)
+  @NonNull
+  @Column(length = 100, nullable = false)
   private String title;
 
   @Column(length = 1024)
@@ -68,12 +74,13 @@ public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapp
   @NonNull
   @ManyToOne(fetch = FetchType.EAGER, optional = false)
   @JoinColumn(name = "creator_id", nullable = false, updatable = false)
-//  @JsonSerialize(as = FlatUser.class)
+  @JsonView(GalleryViews.Hierarchical.class)
   private User creator;
 
-  @NonNull
-  @OneToMany(mappedBy = "gallery", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "gallery", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE,
+      CascadeType.PERSIST, CascadeType.REFRESH})
   @OrderBy("title ASC")
+  @JsonView(GalleryViews.Hierarchical.class)
   private final List<Image> images = new LinkedList<>();
 
   @NonNull
@@ -91,11 +98,25 @@ public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapp
     return updated;
   }
 
+  @NonNull
+  public User getCreator() {
+    return creator;
+  }
+
+  public void setCreator(@NonNull User creator) {
+    this.creator = creator;
+  }
+
+  public List<Image> getImages() {
+    return images;
+  }
+
+  @NonNull
   public String getTitle() {
     return title;
   }
 
-  public void setTitle(String title) {
+  public void setTitle(@NonNull String title) {
     this.title = title;
   }
 
@@ -107,29 +128,12 @@ public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapp
     this.description = description;
   }
 
-  @NonNull
-  public User getCreator() {
-    return creator;
+  public URI getHref() {
+    //noinspection ConstantConditions
+    return (id != null) ? entityLinks.linkForItemResource(Gallery.class, id).toUri() : null;
   }
 
-  public void setCreator(@NonNull User contributor) {
-    this.creator = contributor;
-  }
-
-  @NonNull
-  public List<Image> getImages() {
-    return images;
-  }
-
-  // TODO should links be made for Galleries?
-  /**
-   * Returns the location of REST resource representation of this gallery.
-   */
-//  public URI getHref() {
-//    //noinspection ConstantConditions
-//    return (id != null) ? entityLinks.linkForItemResource(Image.class, id).toUri() : null;
-//  }
-/*  @PostConstruct
+  @PostConstruct
   private void initHateoas() {
     //noinspection ResultOfMethodCallIgnored
     entityLinks.toString();
@@ -137,7 +141,7 @@ public class Gallery /*implements FlatGallery*/ { // TODO Should I show FlatMapp
 
   @Autowired
   public void setEntityLinks(
-      EntityLinks entityLinks) {
+      @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EntityLinks entityLinks) {
     Gallery.entityLinks = entityLinks;
-  }*/
+  }
 }

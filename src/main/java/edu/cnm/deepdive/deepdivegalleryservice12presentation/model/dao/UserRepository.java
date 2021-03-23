@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.deepdivegalleryservice12presentation.model.dao;
 
+
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity.User;
 import java.util.Optional;
 import java.util.UUID;

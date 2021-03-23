@@ -1,11 +1,15 @@
 package edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.GalleryViews;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.ImageViews;
+import java.net.URI;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,18 +24,25 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(
     name = "user_profile",
     indexes = {
-      @Index(columnList = "created"),
-      @Index(columnList = "connected")
-})
+        @Index(columnList = "created"),
+        @Index(columnList = "connected")
+    }
+)
+@Component
+@JsonView({GalleryViews.Hierarchical.class, ImageViews.Hierarchical.class})
 public class User {
+
+  private static EntityLinks entityLinks;
 
   @NonNull
   @Id
@@ -47,7 +58,6 @@ public class User {
   private Date created;
 
   @NonNull
-  @UpdateTimestamp
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = false)
   private Date connected;
@@ -59,23 +69,16 @@ public class User {
 
   @NonNull
   @Column(nullable = false, unique = true)
-  @JsonProperty("name")
   private String displayName;
 
-  @NonNull
   @JsonIgnore
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "contributor")
+  @NonNull
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "contributor", cascade = CascadeType.ALL)
   @OrderBy("created DESC")
   private final List<Image> images = new LinkedList<>();
 
-  @NonNull
   @JsonIgnore
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "contributor")
-  @OrderBy("created DESC")
-  private final List<Image> images = new LinkedList<>();
-
   @NonNull
-  @JsonIgnore
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "creator", cascade = CascadeType.ALL)
   @OrderBy("created DESC")
   private final List<Gallery> galleries = new LinkedList<>();
@@ -125,5 +128,22 @@ public class User {
   @NonNull
   public List<Gallery> getGalleries() {
     return galleries;
+  }
+
+  public URI getHref() {
+    //noinspection ConstantConditions
+    return (id != null) ? entityLinks.linkForItemResource(User.class, id).toUri() : null;
+  }
+
+  @PostConstruct
+  private void initHateoas() {
+    //noinspection ResultOfMethodCallIgnored
+    entityLinks.toString();
+  }
+
+  @Autowired
+  public void setEntityLinks(
+      @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EntityLinks entityLinks) {
+    User.entityLinks = entityLinks;
   }
 }
