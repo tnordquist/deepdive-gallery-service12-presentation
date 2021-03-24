@@ -29,6 +29,14 @@ public class ImageService {
   }
 
   /**
+   * Selects and returns all images.
+   */
+  public Iterable<Image> list() {
+    return imageRepository.getAllByOrderByCreatedDesc();
+  }
+
+
+  /**
    * Selects and returns a {@link Image} with the specified {@code id}, as the content of an {@link
    * Optional Optional&lt;Image&gt;}. If no such instance exists, the {@link Optional} is empty.
    *

@@ -56,6 +56,20 @@ public class ImageController {
     return ResponseEntity.created(image.getHref()).body(image);
   }
 
+  /**
+   * Selects and returns all images.
+   *
+   * @param auth Authentication token with {@link User} principal.
+   * @return Selected images.
+   */
+
+  @JsonView(ImageViews.Hierarchical.class)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public Iterable<Image> list(Authentication auth) {
+    return imageService.list();
+  }
+
+
   @JsonView(ImageViews.Hierarchical.class)
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Image get(@PathVariable UUID id, Authentication auth) {
