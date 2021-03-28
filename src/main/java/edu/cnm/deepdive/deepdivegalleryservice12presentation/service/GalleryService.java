@@ -31,6 +31,18 @@ public class GalleryService {
     return galleryRepository.findById(id);
   }
 
+  /**
+   * This method returns a gallery by passing in the User who created it and the associated gallery id.
+   * @param id this is the gallery primary key.
+   * @param creator this is the current signed in User of the application
+   * @return an Event object, if there are any associated with the User.
+   */
+
+  public Optional<Gallery> get(UUID id, User creator) {
+    return galleryRepository.findByIdAndCreator(id,creator);
+  }
+
+
   public Iterable<Gallery> getAll() {
     return galleryRepository.getAllByOrderByTitleAsc();
   }

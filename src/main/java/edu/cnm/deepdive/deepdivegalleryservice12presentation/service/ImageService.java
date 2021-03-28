@@ -1,6 +1,7 @@
 package edu.cnm.deepdive.deepdivegalleryservice12presentation.service;
 
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.model.dao.ImageRepository;
+import edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity.Gallery;
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity.Image;
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.model.entity.User;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class ImageService {
     return storageService.retrieve(image.getKey());
   }
 
-  public Image store(@NonNull MultipartFile file, String title, String description, @NonNull User contributor)
+  /*public Image store(@NonNull MultipartFile file, String title, String description, @NonNull User contributor)
       throws IOException, HttpMediaTypeException {
     String originalFilename = file.getOriginalFilename();
     String contentType = file.getContentType();
@@ -73,6 +74,24 @@ public class ImageService {
     image.setName((originalFilename != null) ? originalFilename : UNTITLED_FILENAME);
     image.setContentType((contentType != null) ? contentType: MediaType.APPLICATION_OCTET_STREAM_VALUE);
     image.setKey(key);
+    return imageRepository.save(image);
+  }*/
+
+  public Image store(@NonNull MultipartFile file, @NonNull User contributor, Gallery gallery,
+      String title, String description)
+      throws IOException, HttpMediaTypeException {
+    String originalFilename = file.getOriginalFilename();
+    String contentType = file.getContentType();
+    String key = storageService.store(file);
+    Image image = new Image();
+    image.setTitle(title);
+    image.setDescription(description);
+    image.setContributor(contributor);
+    image.setName((originalFilename != null) ? originalFilename : UNTITLED_FILENAME);
+    image.setContentType(
+        (contentType != null) ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    image.setKey(key);
+    image.setGallery(gallery);
     return imageRepository.save(image);
   }
 
