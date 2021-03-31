@@ -65,10 +65,12 @@ public class GalleryController {
                 .get(imageId)
                 .map((image) -> {
                   if (imageInGallery) {
+//                    image.getGalleries().add(gallery);
                     image.setGallery(gallery);
                     gallery.getImages().add(image);
                   } else {
                     image.setGallery(null);
+//                    image.getGalleries().remove(gallery);
                     gallery.getImages().remove(image);
                   }
                   return galleryService.save(gallery);

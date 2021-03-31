@@ -6,6 +6,8 @@ import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.GalleryViews;
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.ImageViews;
 import java.net.URI;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.persistence.Column;
@@ -15,7 +17,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -84,6 +88,12 @@ public class Image {
   @JoinColumn(name = "contributor_id", nullable = false, updatable = false)
   @JsonView(ImageViews.Hierarchical.class)
   private User contributor;
+
+/*  @NonNull
+  @JsonView(ImageViews.Flat.class)
+  @ManyToMany(mappedBy = "images", fetch = FetchType.LAZY)
+  @OrderBy("created DESC")
+  private final List<Gallery> galleries = new LinkedList<>();*/
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "gallery_id")
@@ -158,6 +168,11 @@ public class Image {
   public void setContentType(@NonNull String contentType) {
     this.contentType = contentType;
   }
+
+ /* @NonNull
+  public List<Gallery> getGalleries() {
+    return galleries;
+  }*/
 
   public Gallery getGallery() {
     return gallery;

@@ -27,6 +27,11 @@ public class GalleryService {
     return galleryRepository.save(gallery);
   }
 
+  /**
+   * This method returns a gallery by passing in the associated gallery id.
+   * @param id the gallery id
+   * @return returns an Optional that may or may not wrap a gallery.
+   */
   public Optional<Gallery> get(UUID id) {
     return galleryRepository.findById(id);
   }

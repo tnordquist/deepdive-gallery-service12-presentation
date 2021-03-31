@@ -17,6 +17,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -76,6 +78,15 @@ public class Gallery {
   @JoinColumn(name = "creator_id", nullable = false, updatable = false)
   @JsonView(GalleryViews.Hierarchical.class)
   private User creator;
+
+/*  @NonNull
+  @JsonView(GalleryViews.Flat.class)
+  @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
+      CascadeType.PERSIST, CascadeType.REFRESH})
+  @JoinTable(joinColumns = {@JoinColumn(name = "gallery_id")},
+      inverseJoinColumns = {@JoinColumn(name = "image_id")})
+  @OrderBy("title ASC")
+  private final List<Image> images = new LinkedList<>();*/
 
   @OneToMany(mappedBy = "gallery", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE,
       CascadeType.PERSIST, CascadeType.REFRESH})

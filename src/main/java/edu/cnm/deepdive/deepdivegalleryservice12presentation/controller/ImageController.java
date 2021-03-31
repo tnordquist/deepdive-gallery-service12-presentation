@@ -50,8 +50,8 @@ public class ImageController {
    * @param auth        Authentication token with {@link User} principal.
    * @return Instance of {@link Image} created &amp; persisted for the uploaded content.
    */
-/*
- @JsonView(ImageViews.Hierarchical.class)
+
+/* @JsonView(ImageViews.Hierarchical.class)
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Image> post(
       @RequestParam MultipartFile file,
@@ -61,8 +61,8 @@ public class ImageController {
 
     Image image = imageService.store(file, title, description, (User) auth.getPrincipal());
     return ResponseEntity.created(image.getHref()).body(image);
-  }
-*/
+  }*/
+
 
   /**
    * Stores uploaded file content along with a new {@link Image} instance referencing the content.
