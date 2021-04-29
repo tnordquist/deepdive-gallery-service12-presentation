@@ -30,6 +30,7 @@ server:
   port: 18181
   servlet:
     context-path: /gallery
+  forward-headers-strategy: native
 
 upload:
   # Flag specifying whether the location of the JAR (or class files, if not in a JAR) will also be

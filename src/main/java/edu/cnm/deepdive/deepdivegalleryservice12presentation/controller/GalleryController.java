@@ -9,6 +9,7 @@ import edu.cnm.deepdive.deepdivegalleryservice12presentation.service.ImageServic
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.GalleryViews;
 import edu.cnm.deepdive.deepdivegalleryservice12presentation.view.ImageViews;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.MediaType;
@@ -70,16 +71,16 @@ public class GalleryController {
    * @return Instance of {@link Image} contributed &amp; in association with a {@Link Gallery}
    * persisted for the uploaded content.
    */
-  @JsonView(GalleryViews.Hierarchical.class)
+  @JsonView(ImageViews.Hierarchical.class)
   @PostMapping(value = "/{galleryId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Image> post(
       @PathVariable(required = false) UUID galleryId,
       @RequestParam MultipartFile file,
       @RequestParam(required = false) String title,
-      @RequestParam(required = false) String description,
+      @RequestParam(/*required = false*/) Optional<String> description,
       Authentication auth) throws IOException, HttpMediaTypeException {
     return galleryService.get(galleryId, (User) auth.getPrincipal())
-        .map((gallery) -> securePost(file, (User) auth.getPrincipal(), gallery, title, description))
+        .map((gallery) -> securePost(file, (User) auth.getPrincipal(), gallery, title, description.orElse("Not available")))
         .orElseThrow(ImageNotFoundException::new);
   }
 
